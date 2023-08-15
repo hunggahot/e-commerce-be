@@ -1,11 +1,8 @@
 package com.example.ecommercebe.entity;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 
 import java.time.LocalDate;
-
-@Entity
 public class PaymentInformation {
 
     @Column(name = "cardholder_name")
