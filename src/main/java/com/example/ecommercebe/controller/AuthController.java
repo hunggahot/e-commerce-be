@@ -8,6 +8,8 @@ import com.example.ecommercebe.request.LoginRequest;
 import com.example.ecommercebe.response.AuthResponse;
 import com.example.ecommercebe.service.CustomerUserServiceImplementation;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -26,9 +28,16 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
+    @Autowired
     private UserRepository userRepository;
+
+    @Autowired
     private JwtProvider jwtProvider;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
     private CustomerUserServiceImplementation customerUserService;
 
     @PostMapping("/signup")
@@ -57,10 +66,11 @@ public class AuthController {
 
         String token = jwtProvider.generateToken(authentication);
 
-        AuthResponse authResponse = new AuthResponse(token, "Signup Success");
+        AuthResponse authResponse = new AuthResponse();
+        authResponse.setJwt(token);
+        authResponse.setMessage("Signup Success");
 
         return new ResponseEntity<AuthResponse>(authResponse, HttpStatus.CREATED);
-
     }
 
     @PostMapping("/signin")
@@ -74,7 +84,9 @@ public class AuthController {
 
         String token = jwtProvider.generateToken(authentication);
 
-        AuthResponse authResponse = new AuthResponse(token, "Signin Success");
+        AuthResponse authResponse = new AuthResponse();
+        authResponse.setJwt(token);
+        authResponse.setMessage("Signin Success");
 
         return new ResponseEntity<AuthResponse>(authResponse, HttpStatus.CREATED);
 
