@@ -1,4 +1,4 @@
-package com.example.ecommercebe.service;
+package com.example.ecommercebe.service.user;
 
 import com.example.ecommercebe.entity.User;
 import com.example.ecommercebe.repository.UserRepository;
@@ -14,7 +14,7 @@ import java.util.List;
 
 @Service
 @AllArgsConstructor
-public class CustomerUserServiceImplementation implements UserDetailsService {
+public class UserServiceImplementation implements UserDetailsService {
 
     private UserRepository userRepository;
 

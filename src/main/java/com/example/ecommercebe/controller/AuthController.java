@@ -6,9 +6,8 @@ import com.example.ecommercebe.exception.UserException;
 import com.example.ecommercebe.repository.UserRepository;
 import com.example.ecommercebe.request.LoginRequest;
 import com.example.ecommercebe.response.AuthResponse;
-import com.example.ecommercebe.service.CustomerUserServiceImplementation;
+import com.example.ecommercebe.service.user.UserServiceImplementation;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +37,7 @@ public class AuthController {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private CustomerUserServiceImplementation customerUserService;
+    private UserServiceImplementation customerUserService;
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws UserException {
