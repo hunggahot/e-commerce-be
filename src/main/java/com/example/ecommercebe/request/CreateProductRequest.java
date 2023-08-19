@@ -15,9 +15,9 @@ public class CreateProductRequest {
 
     private String description;
 
-    private String price;
+    private Long price;
 
-    private int discountedPrice;
+    private Long discountedPrice;
 
     private int discountPercent;
 

@@ -1,33 +1,43 @@
 package com.example.ecommercebe.service.user;
 
+import com.example.ecommercebe.config.JwtProvider;
 import com.example.ecommercebe.entity.User;
+import com.example.ecommercebe.exception.UserException;
 import com.example.ecommercebe.repository.UserRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
-@Service
 @AllArgsConstructor
-public class UserServiceImplementation implements UserDetailsService {
+@Service
+public class UserServiceImplementation implements UserService {
 
     private UserRepository userRepository;
+    private JwtProvider jwtProvider;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public User findUserById(Long userId) throws UserException {
 
-        User user = userRepository.findByEmail(username);
-        if (user == null) {
-            throw new UsernameNotFoundException("user not found with email - " + username);
+        Optional<User> user = userRepository.findById(userId);
+        if(user.isPresent()) {
+            return user.get();
         }
 
-        List<GrantedAuthority> authorities = new ArrayList<>();
+        throw new UserException("User not found with id: " + userId);
+    }
 
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorities);
+    @Override
+    public User findUserProfileByJwt(String jwt) throws UserException {
+
+        String email = jwtProvider.getEmailFromToken(jwt);
+
+        User user = userRepository.findByEmail(email);
+
+        if (user == null) {
+            throw new UserException("User not found with email " + email);
+        }
+
+        return user;
     }
 }

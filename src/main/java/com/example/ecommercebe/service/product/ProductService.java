@@ -13,13 +13,13 @@ public interface ProductService {
 
     String deleteProduct(Long productId) throws ProductException;
 
-    Product updateProduct(Long productId, Product product) throws ProductException;
+    Product updateProduct(Long productId, Product req) throws ProductException;
 
     Product findProductById(long id) throws ProductException;
 
     List<Product> findProductByCategory(String category);
 
-    Page<Product> getAllProduct(String category, List<String> color, List<String> size,
+    Page<Product> getAllProduct(String category, List<String> colors, List<String> size,
                                 Integer minPrice, Integer maxPrice, Integer minDiscount,
-                                String stock, Integer pageNumber, Integer pageSize);
+                                String sort ,String stock, Integer pageNumber, Integer pageSize);
 }
