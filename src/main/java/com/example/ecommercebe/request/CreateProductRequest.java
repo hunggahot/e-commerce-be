@@ -2,6 +2,7 @@ package com.example.ecommercebe.request;
 
 import com.example.ecommercebe.entity.Size;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.HashSet;
@@ -9,6 +10,7 @@ import java.util.Set;
 
 @Setter
 @Getter
+@NoArgsConstructor
 public class CreateProductRequest {
 
     private String title;
