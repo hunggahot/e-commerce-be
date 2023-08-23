@@ -1,6 +1,7 @@
 package com.example.ecommercebe.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import java.util.Set;
 @Setter
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Cart {
 
     @Id
@@ -32,8 +34,10 @@ public class Cart {
     @Column(name = "total_item")
     private Long totalItem;
 
+    @Column(name = "total_discounted_price")
     private Long totalDiscountedPrice;
 
+    @Column(name = "discounted")
     private Long discounted;
 
 

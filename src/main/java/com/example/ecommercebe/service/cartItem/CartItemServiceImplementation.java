@@ -28,9 +28,7 @@ public class CartItemServiceImplementation implements CartItemService {
         cartItem.setPrice(cartItem.getProduct().getPrice() * cartItem.getQuantity());
         cartItem.setDiscountedPrice(cartItem.getProduct().getDiscountedPrice() * cartItem.getQuantity());
 
-        CartItem createdCartItem = cartItemRepository.save(cartItem);
-
-        return createdCartItem;
+        return cartItemRepository.save(cartItem);
     }
 
     @Override
@@ -51,8 +49,7 @@ public class CartItemServiceImplementation implements CartItemService {
     @Override
     public CartItem isCartItemExist(Cart cart, Product product, String size, Long userId) {
 
-        CartItem cartItem = cartItemRepository.isCartItemExist(cart, product, size, userId);
-        return cartItem;
+        return cartItemRepository.isCartItemExist(cart, product, size, userId);
     }
 
     @Override
