@@ -27,14 +27,14 @@ public class Cart {
     private Set<CartItem> cartItems = new HashSet<>();
 
     @Column(name = "total_price")
-    private double totalPrice;
+    private Long totalPrice;
 
     @Column(name = "total_item")
-    private int totalItem;
+    private Long totalItem;
 
-    private int totalDiscountedPrice;
+    private Long totalDiscountedPrice;
 
-    private int discounted;
+    private Long discounted;
 
 
 }
