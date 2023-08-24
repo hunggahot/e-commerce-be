@@ -1,12 +1,14 @@
 package com.example.ecommercebe.controller;
 
 import com.example.ecommercebe.config.JwtProvider;
+import com.example.ecommercebe.entity.Cart;
 import com.example.ecommercebe.entity.User;
 import com.example.ecommercebe.exception.UserException;
 import com.example.ecommercebe.repository.UserRepository;
 import com.example.ecommercebe.request.LoginRequest;
 import com.example.ecommercebe.response.AuthResponse;
 import com.example.ecommercebe.service.CustomerUserServiceImplementation;
+import com.example.ecommercebe.service.cart.CartService;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,17 +29,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/auth")
 public class AuthController {
 
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
     private JwtProvider jwtProvider;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
-
-    @Autowired
     private CustomerUserServiceImplementation customerUserService;
+    private CartService cartService;
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> createUserHandler(@RequestBody User user) throws UserException {
@@ -59,6 +55,7 @@ public class AuthController {
         createdUser.setLastName(lastName);
 
         User saveUser = userRepository.save(createdUser);
+        Cart cart = cartService.createCart(saveUser);
 
         Authentication authentication = new UsernamePasswordAuthenticationToken(saveUser.getEmail(), saveUser.getPassword());
         SecurityContextHolder.getContext().setAuthentication(authentication);
