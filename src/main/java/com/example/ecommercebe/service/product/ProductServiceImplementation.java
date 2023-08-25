@@ -42,11 +42,14 @@ public class ProductServiceImplementation implements ProductService {
 
         Category secondLevel = categoryRepository
                 .findByNameAndParent(req.getSecondLevelCategory(), topLevel.getName());
+
         if (secondLevel == null) {
             Category secondLevelCategory = new Category();
             secondLevelCategory.setName(req.getSecondLevelCategory());
             secondLevelCategory.setParentCategory(topLevel);
             secondLevelCategory.setLevel(2);
+
+            secondLevel = categoryRepository.save(secondLevelCategory);
         }
 
         Category thirdLevel = categoryRepository
