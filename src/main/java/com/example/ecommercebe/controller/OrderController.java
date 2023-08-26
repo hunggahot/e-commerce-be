@@ -24,14 +24,14 @@ public class OrderController {
     @Autowired
     private UserService userService;
 
-
+    @PostMapping("/")
     public ResponseEntity<Order> createOrder(@RequestBody Address shippingAddress,
                                              @RequestHeader("Authorization") String jwt) throws UserException {
         User user = userService.findUserProfileByJwt(jwt);
 
         Order order = orderService.createOrder(user, shippingAddress);
 
-        System.out.println("order" + order);
+        System.out.println("order " + order);
 
         return new ResponseEntity<Order>(order, HttpStatus.CREATED);
     }
