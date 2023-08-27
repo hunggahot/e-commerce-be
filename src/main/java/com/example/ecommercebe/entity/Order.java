@@ -15,6 +15,7 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "orders")
 public class Order {
 
     @Id
@@ -42,9 +43,9 @@ public class Order {
 
     private double totalPrice;
 
-    private Integer totalDiscountedPrice;
+    private Long totalDiscountedPrice;
 
-    private Integer discounted;
+    private Long discounted;
 
     private String orderStatus;
 

@@ -60,7 +60,7 @@ public class CartServiceImplementation implements CartService {
 
         long totalPrice = 0;
         long totalDiscountedPrice = 0;
-        long totalItem = 0;
+        int totalItem = 0;
 
         for (CartItem cartItem : cart.getCartItems()) {
             totalPrice = totalPrice + cartItem.getPrice();

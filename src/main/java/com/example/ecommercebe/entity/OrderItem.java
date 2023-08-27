@@ -31,9 +31,9 @@ public class OrderItem {
 
     private int quantity;
 
-    private Integer price;
+    private Long price;
 
-    private Integer discountedPrice;
+    private Long discountedPrice;
 
     private Long userId;
 
