@@ -9,6 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/admin/products")
@@ -52,9 +55,26 @@ public class AdminProductController {
         }
 
         ApiResponse res = new ApiResponse();
-        res.setMessage("Product deleted successfully");
+        res.setMessage("Product created successfully");
         res.setStatus(true);
 
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
+
+//    public ResponseEntity<ApiResponse> importProductData(@RequestParam("file")MultipartFile file) {
+//        try {
+//            // Check if the uploaded file is an Excel file
+//            if (!file.getOriginalFilename().endsWith(".xlsx")) {
+//                ApiResponse res = new ApiResponse();
+//                res.setMessage("Only Excel files (xlsx) are allowed");
+//                res.setStatus(false);
+//                return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+//            }
+//
+//            // Parse the Excel file and import data
+//
+//        } catch (IOException e) {
+//
+//        }
+//    }
 }
