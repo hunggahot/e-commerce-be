@@ -2,21 +2,26 @@ package com.example.ecommercebe.service.product;
 
 import com.example.ecommercebe.entity.Category;
 import com.example.ecommercebe.entity.Product;
+import com.example.ecommercebe.entity.Size;
 import com.example.ecommercebe.exception.ProductException;
 import com.example.ecommercebe.repository.CategoryRepository;
 import com.example.ecommercebe.repository.ProductRepository;
 import com.example.ecommercebe.request.CreateProductRequest;
 import com.example.ecommercebe.service.user.UserService;
 import lombok.AllArgsConstructor;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,7 +37,7 @@ public class ProductServiceImplementation implements ProductService {
 
         Category topLevel = categoryRepository
                 .findByName(req.getTopLevelCategory());
-        if(topLevel == null) {
+        if (topLevel == null) {
             Category topLevelCategory = new Category();
             topLevelCategory.setName(req.getTopLevelCategory());
             topLevelCategory.setLevel(1);
@@ -77,9 +82,7 @@ public class ProductServiceImplementation implements ProductService {
         product.setCategory(thirdLevel);
         product.setCreateAt(LocalDateTime.now());
 
-        Product savedProduct = productRepository.save(product);
-
-        return savedProduct;
+        return productRepository.save(product);
     }
 
     @Override
@@ -134,7 +137,7 @@ public class ProductServiceImplementation implements ProductService {
         }
 
         if (stock != null) {
-            if(stock.equals("in_stock")) {
+            if (stock.equals("in_stock")) {
                 products = products.stream().filter(p -> p.getQuantity() > 0).collect(Collectors.toList());
             } else if (stock.equals("out_of_stock")) {
                 products = products.stream().filter(p -> p.getQuantity() < 1).collect(Collectors.toList());
@@ -150,4 +153,180 @@ public class ProductServiceImplementation implements ProductService {
 
         return filteredProducts;
     }
+
+    @Override
+    public List<Product> importProductData(MultipartFile file) throws ProductException {
+        try (InputStream inputStream = file.getInputStream()) {
+            Workbook workbook = new XSSFWorkbook(inputStream);
+            Sheet sheet = workbook.getSheetAt(0); // Assuming the first sheet contains the data
+
+            List<Product> importedProducts = new ArrayList<>();
+
+            Iterator<Row> rowIterator = sheet.iterator();
+
+            if (rowIterator.hasNext()) {
+                rowIterator.next();
+            }
+
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+
+                // Assuming the columns in Excel file are in a specific order
+                String imageUrl = getStringValue(row.getCell(0));
+                String brand = getStringValue(row.getCell(1));
+                String title = getStringValue(row.getCell(2));
+                String color = getStringValue(row.getCell(3));
+                int quantity = getNumericValue(row.getCell(4)).intValue();
+                Long price = getNumericValue(row.getCell(5));
+                Long discountedPrice = getNumericValue(row.getCell(6));
+                int discountPercent = getNumericValue(row.getCell(7)).intValue();
+                String description = getStringValue(row.getCell(8));
+                String sizesStr = getStringValue(row.getCell(9));
+                String topLevelCategory = getStringValue(row.getCell(9));
+                String secondLevelCategory = getStringValue(row.getCell(10));
+                String thirdLevelCategory = getStringValue(row.getCell(11));
+
+                // Find or create category entities
+                Category topLevel = categoryRepository.findByName(topLevelCategory);
+                if (topLevel == null) {
+                    Category topLevelCategoryEntity = new Category();
+                    topLevelCategoryEntity.setName(topLevelCategory);
+                    topLevelCategoryEntity.setLevel(1);
+                    topLevel = categoryRepository.save(topLevelCategoryEntity);
+                }
+
+                Category secondLevel = categoryRepository.findByNameAndParent(secondLevelCategory, topLevel.getName());
+                if (secondLevel == null) {
+                    Category secondLevelCategoryEntity = new Category();
+                    secondLevelCategoryEntity.setName(secondLevelCategory);
+                    secondLevelCategoryEntity.setParentCategory(topLevel);
+                    secondLevelCategoryEntity.setLevel(2);
+                    secondLevel = categoryRepository.save(secondLevelCategoryEntity);
+                }
+
+                Category thirdLevel = categoryRepository.findByNameAndParent(thirdLevelCategory, secondLevel.getName());
+                if (thirdLevel == null) {
+                    Category thirdLevelCategoryEntity = new Category();
+                    thirdLevelCategoryEntity.setName(thirdLevelCategory);
+                    thirdLevelCategoryEntity.setParentCategory(secondLevel);
+                    thirdLevelCategoryEntity.setLevel(3);
+                    thirdLevel = categoryRepository.save(thirdLevelCategoryEntity);
+                }
+
+                Set<Size> sizes = parseSizes(sizesStr);
+
+                // Create a Product object and set category
+                Product product = new Product();
+                product.setTitle(title);
+                product.setColor(color);
+                product.setDescription(description);
+                product.setDiscountedPrice(discountedPrice);
+                product.setDiscountPercent(discountPercent);
+                product.setImageUrl(imageUrl);
+                product.setBrand(brand);
+                product.setPrice(price);
+                product.setSizes(sizes);
+                product.setQuantity(quantity);
+                product.setCategory(thirdLevel);
+                product.setCreateAt(LocalDateTime.now());
+
+                productRepository.save(product);
+
+                importedProducts.add(product);
+
+            }
+            return importedProducts;
+        } catch (IOException e) {
+            throw new ProductException("Failed to import product data from Excel: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public List<Product> findProductVariations(Long productId) {
+        return productRepository.findByParentProductId(productId);
+    }
+
+    @Override
+    public Product findProductVariationById(Long productId, Long variationId) throws ProductException {
+        Optional<Product> productOptional = productRepository.findByParentProductIdAndId(productId, variationId);
+
+        if (productOptional.isPresent()) {
+            return productOptional.get();
+        } else {
+            throw new ProductException("Product variation not found");
+        }
+    }
+
+    @Override
+    public Product createProductVariation(Long productId, Long variationId) throws ProductException {
+
+        Product parentProduct = findProductById(productId);
+
+        Product variationProduct = new Product();
+        variationProduct.setParentProduct(parentProduct);
+
+        return productRepository.save(variationProduct);
+    }
+
+    @Override
+    public void deleteProductVariation(Long productId, Long variationId) throws ProductException {
+        Product parentProduct = findProductById(productId);
+
+        Product variationProduct = findProductById(variationId);
+
+        if (variationProduct.getParentProduct() != parentProduct) {
+            throw new ProductException("Variation product does not belong to the specified parent product.");
+        }
+
+        parentProduct.getVariations().remove(variationProduct);
+
+        productRepository.delete(variationProduct);
+    }
+
+    @Override
+    public Product updateProductVariation(Long productId, long variationId, Product req) throws ProductException {
+        Product parentProduct = findProductById(productId);
+
+        Product variationProduct = findProductById(variationId);
+
+        if (variationProduct.getParentProduct() != parentProduct) {
+            throw new ProductException("Variation product does not belong to the specified parent product.");
+        }
+
+        if (req.getQuantity() != 0) {
+            variationProduct.setQuantity(req.getQuantity());
+        }
+
+        return productRepository.save(variationProduct);
+    }
+
+    private String getStringValue(Cell cell) {
+        return cell == null ? null : cell.getStringCellValue();
+    }
+
+    private Long getNumericValue(Cell cell) {
+        return cell == null ? null : (long) cell.getNumericCellValue();
+    }
+
+    private Set<Size> parseSizes(String sizesStr) {
+        Set<Size> sizes = new HashSet<>();
+        if (sizesStr != null && !sizesStr.isEmpty()) {
+            String[] sizeArray = sizesStr.split(",");
+            for (String sizeStr : sizeArray) {
+                String[] parts = sizeStr.trim().split(":");
+                if (parts.length == 2) {
+                    String name = parts[0].trim();
+                    int quantity = Integer.parseInt(parts[1].trim());
+                    Size size = new Size();
+                    size.setName(name);
+                    size.setQuantity(quantity);
+                    sizes.add(size);
+                }
+            }
+        }
+        return sizes;
+    }
+
 }
+
+

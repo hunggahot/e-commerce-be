@@ -8,6 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Entity
 @Setter
 @Getter
@@ -19,8 +22,6 @@ public class Category {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @NotNull
-    @Size(max = 50)
     private String name;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -28,4 +29,17 @@ public class Category {
     private Category parentCategory;
 
     private int level;
+
+    @OneToMany(mappedBy = "parentCategory", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Category> subCategories = new HashSet<>();
+
+    public void addSubCategory(Category subCategory) {
+        subCategories.add(subCategory);
+        subCategory.setParentCategory(this);
+    }
+
+    public void removeSubCategory(Category subCategory) {
+        subCategories.remove(subCategory);
+        subCategory.setParentCategory(null);
+    }
 }

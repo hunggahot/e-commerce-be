@@ -1,11 +1,13 @@
 package com.example.ecommercebe.repository;
 
+import com.example.ecommercebe.entity.Category;
 import com.example.ecommercebe.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ProductRepository extends JpaRepository<Product, Long> {
 
@@ -22,5 +24,11 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
                                  @Param("maxPrice") Integer maxPrice,
                                  @Param("minDiscount") Integer minDiscount,
                                  @Param("sort") String sort);
+
+    List<Product> findByCategory(Category category);
+
+    List<Product> findByParentProductId(Long parentProductId);
+
+    Optional<Product> findByParentProductIdAndId(Long parentProductId, Long variationId);
 
 }

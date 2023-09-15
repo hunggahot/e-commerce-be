@@ -35,8 +35,21 @@ public class Product {
     @Column(name = "discount_percent")
     private int discountPercent;
 
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Inventory> inventoryList = new ArrayList<>();
+
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Batch> batchList = new ArrayList<>();
+
+    @ManyToOne
+    @JoinColumn(name = "parent_product_id")
+    private Product parentProduct;
+
+    @OneToMany(mappedBy = "parentProduct", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Product> variations = new ArrayList<>();
+
     @Column(name = "quantity")
-    private int quantity;
+    private int quantity; // remove later
 
     @Column(name = "brand")
     private String brand;
@@ -47,6 +60,7 @@ public class Product {
     @Embedded
     @ElementCollection
     @Column(name = "sizes")
+    @CollectionTable(name = "product_sizes")
     private Set<Size> sizes = new HashSet<>();
 
     @Column(name = "image_url")
