@@ -308,6 +308,7 @@ public class ProductServiceImplementation implements ProductService {
         return cell == null ? null : (long) cell.getNumericCellValue();
     }
 
+    // Helper method to parse size information and create Size objects
     private Set<Size> parseSizes(String sizesStr) {
         Set<Size> sizes = new HashSet<>();
         if (sizesStr != null && !sizesStr.isEmpty()) {
@@ -315,18 +316,17 @@ public class ProductServiceImplementation implements ProductService {
             for (String sizeStr : sizeArray) {
                 String[] parts = sizeStr.trim().split(":");
                 if (parts.length == 2) {
-                    String name = parts[0].trim();
-                    int quantity = Integer.parseInt(parts[1].trim());
+                    String sizeName = parts[0].trim();
+                    int sizeQuantity = Integer.parseInt(parts[1].trim());
+
+                    // Create a Size object and add it to the set
                     Size size = new Size();
-                    size.setName(name);
-                    size.setQuantity(quantity);
+                    size.setName(sizeName);
+                    size.setQuantity(sizeQuantity);
                     sizes.add(size);
                 }
             }
         }
         return sizes;
     }
-
 }
-
-

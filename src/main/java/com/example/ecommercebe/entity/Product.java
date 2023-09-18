@@ -42,6 +42,10 @@ public class Product {
     private List<Batch> batchList = new ArrayList<>();
 
     @ManyToOne
+    @JoinColumn(name = "supplier_id") // This should match your database schema
+    private Supplier supplier;
+
+    @ManyToOne
     @JoinColumn(name = "parent_product_id")
     private Product parentProduct;
 
