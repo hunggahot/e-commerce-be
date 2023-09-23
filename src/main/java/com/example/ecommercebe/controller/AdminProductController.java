@@ -61,20 +61,14 @@ public class AdminProductController {
         return new ResponseEntity<>(res, HttpStatus.CREATED);
     }
 
-//    public ResponseEntity<ApiResponse> importProductData(@RequestParam("file")MultipartFile file) {
-//        try {
-//            // Check if the uploaded file is an Excel file
-//            if (!file.getOriginalFilename().endsWith(".xlsx")) {
-//                ApiResponse res = new ApiResponse();
-//                res.setMessage("Only Excel files (xlsx) are allowed");
-//                res.setStatus(false);
-//                return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
-//            }
-//
-//            // Parse the Excel file and import data
-//
-//        } catch (IOException e) {
-//
-//        }
-//    }
+    @PostMapping("/import")
+    public ResponseEntity<String> importProductData(@RequestParam("file") MultipartFile file) {
+        try {
+            productService.importProductData(file);
+            return ResponseEntity.ok("Product data imported successfully");
+        } catch (ProductException e) {
+            return ResponseEntity.badRequest().body("Failed to import product data: " + e.getMessage());
+        }
+    }
 }
+

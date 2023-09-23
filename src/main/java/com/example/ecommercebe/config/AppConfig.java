@@ -4,6 +4,7 @@ import com.example.ecommercebe.config.JwtValidator;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -14,17 +15,34 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
+@EnableWebSecurity
 public class AppConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-                .authorizeHttpRequests(Authorize->Authorize.requestMatchers("/api/v1/**").authenticated().anyRequest().permitAll())
-                .addFilterBefore(new JwtValidator(), BasicAuthenticationFilter.class)
+                .authorizeHttpRequests(Authorize -> Authorize
+                        .requestMatchers("/", "/signin", "/signup", "/error**")
+                        .authenticated()
+                        .anyRequest()
+                        .permitAll())
+                .formLogin(formLogin -> formLogin
+                        .loginPage("/signin")
+                        .defaultSuccessUrl("/admin")
+                        .permitAll()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/login")
+                        .defaultSuccessUrl("/admin")
+                )
+                .logout()
+                .logoutSuccessUrl("/")
+                .permitAll()
+                .and()
                 .csrf().disable()
                 .cors().configurationSource(corsConfigurationSource()) // Use configured source
-                .and().httpBasic().and().formLogin();
+                .and().httpBasic();
         return http.build();
     }
 

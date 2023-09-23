@@ -157,6 +157,9 @@ public class ProductServiceImplementation implements ProductService {
     @Override
     public List<Product> importProductData(MultipartFile file) throws ProductException {
         try (InputStream inputStream = file.getInputStream()) {
+            // Log that the method is entered
+            System.out.println("Received a request to import product data.");
+
             Workbook workbook = new XSSFWorkbook(inputStream);
             Sheet sheet = workbook.getSheetAt(0); // Assuming the first sheet contains the data
 
@@ -176,15 +179,15 @@ public class ProductServiceImplementation implements ProductService {
                 String brand = getStringValue(row.getCell(1));
                 String title = getStringValue(row.getCell(2));
                 String color = getStringValue(row.getCell(3));
-                int quantity = getNumericValue(row.getCell(4)).intValue();
+                Long discountedPrice = getNumericValue(row.getCell(4));
                 Long price = getNumericValue(row.getCell(5));
-                Long discountedPrice = getNumericValue(row.getCell(6));
-                int discountPercent = getNumericValue(row.getCell(7)).intValue();
-                String description = getStringValue(row.getCell(8));
-                String sizesStr = getStringValue(row.getCell(9));
+                int discountPercent = getNumericValue(row.getCell(6)).intValue();
+                String sizesStr = getStringValue(row.getCell(7));
+                int quantity = getNumericValue(row.getCell(8)).intValue();
                 String topLevelCategory = getStringValue(row.getCell(9));
                 String secondLevelCategory = getStringValue(row.getCell(10));
                 String thirdLevelCategory = getStringValue(row.getCell(11));
+                String description = getStringValue(row.getCell(12));
 
                 // Find or create category entities
                 Category topLevel = categoryRepository.findByName(topLevelCategory);
@@ -235,8 +238,14 @@ public class ProductServiceImplementation implements ProductService {
                 importedProducts.add(product);
 
             }
+
+            // Log that processing is complete
+            System.out.println("Product data import completed successfully.");
+
             return importedProducts;
         } catch (IOException e) {
+            // Log the exception if an error occurs
+            System.err.println("Failed to import product data from Excel: " + e.getMessage());
             throw new ProductException("Failed to import product data from Excel: " + e.getMessage());
         }
     }

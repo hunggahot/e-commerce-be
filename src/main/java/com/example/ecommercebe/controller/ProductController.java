@@ -18,7 +18,6 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    //baseurl/api/products?category=cate&color=value&size
     @GetMapping("/products")
     public ResponseEntity<Page<Product>> findProductByCategoryHandler(@RequestParam String category, @RequestParam List<String> color,
                                                                       @RequestParam List<String> size, @RequestParam Integer minPrice,

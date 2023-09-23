@@ -1,5 +1,8 @@
 package com.example.ecommercebe.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,6 +38,7 @@ public class Product {
     @Column(name = "discount_percent")
     private int discountPercent;
 
+    @JsonIgnoreProperties("product")
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Inventory> inventoryList = new ArrayList<>();
 
@@ -79,8 +83,9 @@ public class Product {
     @Column(name = "num_ratings")
     private int numRatings;
 
-    @ManyToOne()
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
+    @JsonBackReference
     private Category category;
 
     private LocalDateTime createAt;

@@ -1,5 +1,6 @@
 package com.example.ecommercebe.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,6 +20,7 @@ public class Inventory {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    @JsonBackReference
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;

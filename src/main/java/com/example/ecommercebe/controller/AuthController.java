@@ -21,6 +21,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @AllArgsConstructor
 @RestController
 @RequestMapping("/auth")
@@ -83,6 +85,32 @@ public class AuthController {
 
         return new ResponseEntity<AuthResponse>(authResponse, HttpStatus.CREATED);
 
+    }
+
+    @PostMapping("/oauth2signin")
+    public ResponseEntity<AuthResponse> oauth2Login(@RequestBody Map<String, String> oauth2UserDetails) {
+        String email = oauth2UserDetails.get("email");
+        User user = userRepository.findByEmail(email);
+
+        if (user != null) {
+            // User exists, perform authentication
+            Authentication authentication = new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // Generate JWT token
+            String token = jwtProvider.generateToken(authentication);
+
+            AuthResponse authResponse = new AuthResponse();
+            authResponse.setJwt(token);
+            authResponse.setMessage("OAuth2.0 Signin Success");
+
+            return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
+        } else {
+            // User doesn't exist, return an error response
+            AuthResponse errorResponse = new AuthResponse();
+            errorResponse.setMessage("OAuth2.0 Signin Failed: User not found");
+            return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
+        }
     }
 
     private Authentication authenticate(String username, String password) {
