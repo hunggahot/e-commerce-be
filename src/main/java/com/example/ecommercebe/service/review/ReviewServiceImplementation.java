@@ -23,9 +23,14 @@ public class ReviewServiceImplementation implements ReviewService{
     private ProductRepository productRepository;
 
     @Override
-    public Review createReview(ReviewRequest req, User user) throws ProductException {
+    public Review createReview(ReviewRequest req, User user, Long productId) throws ProductException {
 
-        Product product = productService.findProductById(req.getProductId());
+        Product product = productService.findProductById(productId);
+
+        if (product == null) {
+            // Handle the case where the product with the specified productId is not found.
+            throw new ProductException("Product not found for productId: " + productId);
+        }
 
         Review review = new Review();
         review.setUser(user);

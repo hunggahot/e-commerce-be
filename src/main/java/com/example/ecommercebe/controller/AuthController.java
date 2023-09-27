@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -74,17 +75,26 @@ public class AuthController {
         String username = loginRequest.getEmail();
         String password = loginRequest.getPassword();
 
-        Authentication authentication = authenticate(username, password);
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            // Attempt authentication
+            Authentication authentication = authenticate(username, password);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        String token = jwtProvider.generateToken(authentication);
+            // Generate JWT token
+            String token = jwtProvider.generateToken(authentication);
 
-        AuthResponse authResponse = new AuthResponse();
-        authResponse.setJwt(token);
-        authResponse.setMessage("Signin Success");
+            AuthResponse authResponse = new AuthResponse();
+            authResponse.setJwt(token);
+            authResponse.setMessage("Signin Success");
 
-        return new ResponseEntity<AuthResponse>(authResponse, HttpStatus.CREATED);
+            return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
+        } catch (AuthenticationException e) {
+            // Authentication failed, return an error response
+            AuthResponse errorResponse = new AuthResponse();
+            errorResponse.setMessage("Signin Failed: Invalid credentials"); // Customize your error message here
 
+            return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @PostMapping("/oauth2signin")

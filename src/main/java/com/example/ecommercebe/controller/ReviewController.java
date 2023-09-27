@@ -7,6 +7,7 @@ import com.example.ecommercebe.exception.UserException;
 import com.example.ecommercebe.request.ReviewRequest;
 import com.example.ecommercebe.service.review.ReviewService;
 import com.example.ecommercebe.service.user.UserService;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,22 +16,24 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("/api/v1/reviews")
 public class ReviewController {
 
-    @Autowired
-    private ReviewService reviewService;
+    private final ReviewService reviewService;
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
 
-    @PostMapping("/create")
+    @PostMapping("/product/{productId}/create")
     public ResponseEntity<Review> createReview(@RequestBody ReviewRequest req,
+                                               @PathVariable Long productId,
                                                @RequestHeader("Authorization") String jwt) throws UserException, ProductException {
         User user = userService.findUserProfileByJwt(jwt);
 
-        Review review = reviewService.createReview(req, user);
+        // Now you have access to the productId from the path variable
+        // You can use it to associate the review with the product
+        Review review = reviewService.createReview(req, user, productId);
 
         return new ResponseEntity<>(review, HttpStatus.CREATED);
     }

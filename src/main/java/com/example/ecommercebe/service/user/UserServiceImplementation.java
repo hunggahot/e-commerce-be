@@ -43,6 +43,30 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
+    public User updateUserProfileByJwt(String jwt, User updatedUser) throws UserException {
+        // Extract email from the JWT
+        String email = jwtProvider.getEmailFromToken(jwt);
+
+        // Find the user by email
+        User user = userRepository.findByEmail(email);
+
+        if (user == null) {
+            throw new UserException("User not found with email " + email);
+        }
+
+        // Update user's profile with the provided data
+        user.setFirstName(updatedUser.getFirstName());
+        user.setLastName(updatedUser.getLastName());
+        user.setEmail(updatedUser.getEmail());
+        user.setMobile(updatedUser.getMobile());
+        // Add other profile fields as needed
+
+        // Save the updated user
+
+        return userRepository.save(user);
+    }
+
+    @Override
     public void addRoleToUser(User user, Role role) throws UserException {
         if (!user.getRoles().contains(role)) {
             user.getRoles().add(role);

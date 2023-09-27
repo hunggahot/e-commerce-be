@@ -28,6 +28,19 @@ public class UserController {
         return new ResponseEntity<User>(user, HttpStatus.ACCEPTED);
     }
 
+    @PutMapping("/profile")
+    public ResponseEntity<?> updateUserProfileByJwt(@RequestHeader("Authorization") String jwt,
+                                                    @RequestBody User updatedUser) {
+        try {
+            String token = jwt.replace("Bearer ", "");
+            User updatedUserProfile = userService.updateUserProfileByJwt(token, updatedUser);
+
+            return ResponseEntity.ok(updatedUserProfile);
+        } catch (UserException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
     @PostMapping("/{userId}/roles/add")
     public ResponseEntity<String> addRoleToUser(
             @PathVariable Long userId,

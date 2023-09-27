@@ -1,6 +1,7 @@
 package com.example.ecommercebe.config;
 
 import com.example.ecommercebe.config.JwtValidator;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -14,8 +15,10 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
+import java.util.Collections;
+
 @Configuration
-@EnableWebSecurity
 public class AppConfig {
 
     @Bean
@@ -23,41 +26,30 @@ public class AppConfig {
 
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeHttpRequests(Authorize -> Authorize
-                        .requestMatchers("/", "/signin", "/signup", "/error**")
+                        .requestMatchers("/api/v1/**")
                         .authenticated()
-                        .anyRequest()
-                        .permitAll())
-                .formLogin(formLogin -> formLogin
-                        .loginPage("/signin")
-                        .defaultSuccessUrl("/admin")
-                        .permitAll()
-                )
-                .oauth2Login(oauth2 -> oauth2
-                        .loginPage("/login")
-                        .defaultSuccessUrl("/admin")
-                )
-                .logout()
-                .logoutSuccessUrl("/")
-                .permitAll()
-                .and()
-                .csrf().disable()
-                .cors().configurationSource(corsConfigurationSource()) // Use configured source
-                .and().httpBasic();
+                        .anyRequest().permitAll())
+                .addFilterBefore(new JwtValidator(), BasicAuthenticationFilter.class).csrf().disable()
+                .cors().configurationSource(new CorsConfigurationSource() {
+                    @Override
+                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+                        CorsConfiguration cfg = new CorsConfiguration();
+
+                        cfg.setAllowedOrigins(Arrays.asList(
+                                "http://localhost:3000",
+                                "http://localhost:5000"
+                        ));
+                        cfg.setAllowedMethods(Collections.singletonList("*"));
+                        cfg.setAllowCredentials(true);
+                        cfg.setAllowedHeaders(Collections.singletonList("*"));
+                        cfg.setExposedHeaders(Arrays.asList("Authorization"));
+                        cfg.setMaxAge(3600L);
+                        return cfg;
+                    }
+                })
+                .and().httpBasic().and().formLogin();
+
         return http.build();
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.addAllowedOrigin("http://localhost:3000");
-        config.addAllowedOrigin("http://localhost:5000");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
-        return source;
     }
 
     @Bean

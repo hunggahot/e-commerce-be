@@ -8,7 +8,10 @@ public interface UserService {
 
     User findUserById(Long userId) throws UserException;
 
+
     User findUserProfileByJwt(String jwt) throws UserException;
+
+    User updateUserProfileByJwt(String jwt, User updatedUser) throws UserException;
 
     void addRoleToUser(User user, Role role) throws UserException;
 

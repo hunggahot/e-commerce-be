@@ -9,6 +9,6 @@ import java.util.List;
 
 public interface ReviewService {
 
-    Review createReview(ReviewRequest req, User user) throws ProductException;
+    Review createReview(ReviewRequest req, User user, Long productId) throws ProductException;
     List<Review> getAllReview(Long productId);
 }
