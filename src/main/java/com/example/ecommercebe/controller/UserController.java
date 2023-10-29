@@ -1,16 +1,16 @@
 package com.example.ecommercebe.controller;
 
-import com.example.ecommercebe.entity.Role;
 import com.example.ecommercebe.entity.User;
 import com.example.ecommercebe.exception.RoleException;
 import com.example.ecommercebe.exception.UserException;
 import com.example.ecommercebe.service.role.RoleService;
 import com.example.ecommercebe.service.user.UserService;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -41,38 +41,41 @@ public class UserController {
         }
     }
 
-    @PostMapping("/{userId}/roles/add")
-    public ResponseEntity<String> addRoleToUser(
+    @PostMapping("/{userId}/roles/assign")
+    public ResponseEntity<String> assignRolesToUser(
             @PathVariable Long userId,
-            @RequestParam Long roleId) {
+            @RequestBody List<Long> roleIds) {
         try {
-            User user = userService.findUserById(userId);
-            Role role = roleService.getRoleByID(roleId);
-
-            userService.addRoleToUser(user, role);
-
-            return ResponseEntity.ok("Role added to user successfully.");
-        } catch (UserException | RoleException e) {
+            userService.assignRolesToUser(userId, roleIds);
+            return ResponseEntity.ok("Roles assigned to user successfully.");
+        } catch (UserException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Error: " + e.getMessage());
+                    .body("User not found.");
+        } catch (RoleException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Role not found.");
         }
     }
 
-    @PostMapping("/{userId}/roles/remove")
-    public ResponseEntity<String> removeRoleFromUser(
+    @DeleteMapping("/{userId}/roles")
+    public ResponseEntity<?> removeRolesFromUser(
             @PathVariable Long userId,
-            @RequestParam Long roleId) {
+            @RequestBody List<Long> roleIds) {
         try {
-            User user = userService.findUserById(userId);
-            Role role = roleService.getRoleByID(roleId);
-
-            userService.removeRoleFromUser(user, role);
-
-            return ResponseEntity.ok("Role removed from user successfully.");
-        } catch (UserException | RoleException e) {
+            userService.removeRolesFromUser(userId, roleIds);
+            return ResponseEntity.ok("Roles removed from the user successfully.");
+        } catch (UserException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Error: " + e.getMessage());
+                    .body("User not found.");
+        } catch (RoleException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Role not found.");
         }
+    }
+    @GetMapping("/")
+    public ResponseEntity<List<User>> getAllUsers() {
+        List<User> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 
 }

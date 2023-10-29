@@ -2,6 +2,7 @@ package com.example.ecommercebe.controller;
 
 import com.example.ecommercebe.entity.Permission;
 import com.example.ecommercebe.entity.Role;
+import com.example.ecommercebe.exception.RoleException;
 import com.example.ecommercebe.service.role.RoleService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -46,13 +47,20 @@ public class RoleController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping("/{roleId}/togglePermission")
+    @PostMapping("/{roleId}/permission/toggle")
     public ResponseEntity<?> togglePermission(
             @PathVariable Long roleId,
-            @RequestParam Permission permission,
+            @RequestParam String permission,
             @RequestParam boolean isEnabled) {
-        roleService.togglePermission(roleId, permission, isEnabled);
-        return ResponseEntity.ok("Permission toggled successfully");
+        try {
+            roleService.togglePermission(roleId, Permission.valueOf(permission), isEnabled);
+            return ResponseEntity.ok("Permission toggled successfully.");
+        } catch (RoleException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Role not found.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Invalid permission.");
+        }
     }
-
 }

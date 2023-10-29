@@ -2,13 +2,13 @@ package com.example.ecommercebe.service.role;
 
 import com.example.ecommercebe.entity.Permission;
 import com.example.ecommercebe.entity.Role;
-import com.example.ecommercebe.entity.RolePermission;
 import com.example.ecommercebe.exception.RoleException;
 import com.example.ecommercebe.repository.RoleRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -57,15 +57,18 @@ public class RoleServiceImplementation implements RoleService{
         Role role = roleRepository.findById(roleId)
                 .orElseThrow(() -> new RoleException("Role not found"));
 
-        if (isEnabled) {
-            RolePermission rolePermission = new RolePermission();
-            rolePermission.setRole(role);
-            rolePermission.setPermission(permission);
-            role.getRolePermissions().add(rolePermission);
-        } else {
-            role.getRolePermissions().removeIf(rp -> rp.getPermission() == permission);
+        // Check if the permission is already enabled or disabled
+        boolean isPermissionEnabled = role.getPermissions().contains(permission);
+
+        if (isEnabled && !isPermissionEnabled) {
+            // Enable the permission
+            role.getPermissions().add(permission);
+        } else if (!isEnabled && isPermissionEnabled) {
+            // Disable the permission
+            role.getPermissions().remove(permission);
         }
 
         roleRepository.save(role);
     }
+
 }

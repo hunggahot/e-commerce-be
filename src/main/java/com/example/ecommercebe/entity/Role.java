@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,6 +24,8 @@ public class Role {
 
         private String description;
 
-        @OneToMany(mappedBy = "role")
-        private Set<RolePermission> rolePermissions = new HashSet<>();
+        @ElementCollection(targetClass = Permission.class, fetch = FetchType.EAGER)
+        @CollectionTable(name = "role_permissions", joinColumns = @JoinColumn(name = "role_id"))
+        @Enumerated(EnumType.STRING)
+        private Set<Permission> permissions = EnumSet.noneOf(Permission.class);
 }

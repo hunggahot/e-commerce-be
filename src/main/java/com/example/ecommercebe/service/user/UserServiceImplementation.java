@@ -3,12 +3,19 @@ package com.example.ecommercebe.service.user;
 import com.example.ecommercebe.config.JwtProvider;
 import com.example.ecommercebe.entity.Role;
 import com.example.ecommercebe.entity.User;
+import com.example.ecommercebe.exception.RoleException;
 import com.example.ecommercebe.exception.UserException;
+import com.example.ecommercebe.repository.RoleRepository;
 import com.example.ecommercebe.repository.UserRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @AllArgsConstructor
 @Service
@@ -16,6 +23,13 @@ public class UserServiceImplementation implements UserService {
 
     private UserRepository userRepository;
     private JwtProvider jwtProvider;
+    private RoleRepository roleRepository;
+    private PasswordEncoder passwordEncoder;
+
+    @Override
+    public List<User> getAllUsers() throws UserException {
+        return userRepository.findAll();
+    }
 
     @Override
     public User findUserById(Long userId) throws UserException {
@@ -67,23 +81,36 @@ public class UserServiceImplementation implements UserService {
     }
 
     @Override
-    public void addRoleToUser(User user, Role role) throws UserException {
-        if (!user.getRoles().contains(role)) {
-            user.getRoles().add(role);
-            userRepository.save(user);
-        } else {
-            throw new UserException("User already has the role: " + role.getName());
-        }
+    public void assignRolesToUser(Long userId, List<Long> roleIds) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException("User not found"));
+
+        Set<Role> roles = roleIds.stream()
+                .map(roleId -> roleRepository.findById(roleId)
+                        .orElseThrow(() -> new RoleException("Role not found")))
+                .collect(Collectors.toSet());
+        user.setRoles(roles);
+
+        userRepository.save(user);
     }
 
     @Override
-    public void removeRoleFromUser(User user, Role role) throws UserException {
-        if (user.getRoles().contains(role)) {
-            user.getRoles().remove(role);
-            userRepository.save(user);
-        } else {
-            throw new UserException("User does not have the role: " + role.getName());
+    public void removeRolesFromUser(Long userId, List<Long> roleIds) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException("User not found"));
+
+        Set<Long> roleIdsSet = new HashSet<>(roleIds);
+        Set<Role> rolesToRemove = new HashSet<>();
+
+        for (Long roleId : roleIdsSet) {
+            Role role = roleRepository.findById(roleId)
+                    .orElseThrow(() -> new RoleException("Role not found"));
+            rolesToRemove.add(role);
         }
+
+        user.getRoles().removeAll(rolesToRemove);
+
+        userRepository.save(user);
     }
 
     @Override
